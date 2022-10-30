@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <cstring>
 #include <unistd.h>
 #include <iostream>
 #include <sys/socket.h>
