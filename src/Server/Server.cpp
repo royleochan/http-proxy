@@ -18,6 +18,11 @@ void Server::startListening() {
             exit(EXIT_FAILURE);
         }
 
+        char buffer[1024] = {0};
+        read(newSocket, buffer, 1024);
+        printf("%s", buffer);
+        HttpRequest req = HttpRequest::parseStringToHttpRequest(buffer);
+
         const char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
         write(newSocket , hello , strlen(hello));
         close(newSocket);
