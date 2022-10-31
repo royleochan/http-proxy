@@ -1,6 +1,14 @@
 #include "Server.h"
 
-Server::Server(int port) : connSocket(Socket::createSocket(AF_INET, SOCK_STREAM, 0, port, INADDR_ANY, SERVER_SOCKET)), port(port) {
+Server::Server(int port, bool isImageSubMode, bool isAttackerMode) : connSocket(Socket::createSocket(AF_INET, SOCK_STREAM, 0, port, INADDR_ANY, SERVER_SOCKET)),
+    port(port), isImageSubMode(isImageSubMode), isAttackerMode(isAttackerMode) {
+}
+
+char* Server::handleRequest(HttpRequest request) const {
+    if (isAttackerMode) {
+        return "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 22\n\nYou are being attacked";
+    }
+    return "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 21\n\nNeed to proxy request";
 }
 
 void Server::startListening() {
@@ -23,8 +31,8 @@ void Server::startListening() {
         printf("%s", buffer);
         HttpRequest req = HttpRequest::parseStringToHttpRequest(buffer);
 
-        const char *hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-        write(newSocket , hello , strlen(hello));
+        const char* result = handleRequest(req);
+        write(newSocket , result , strlen(result));
         close(newSocket);
     }
 }

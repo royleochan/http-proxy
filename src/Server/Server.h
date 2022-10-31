@@ -9,7 +9,10 @@ class Server {
 private:
     Socket connSocket;
     int port;
+    bool isImageSubMode;
+    bool isAttackerMode;
+    char* handleRequest(HttpRequest request) const;
 public:
-    explicit Server(int port);
+    explicit Server(int port, bool isImageSubMode, bool isAttackerMode);
     void startListening();
 };

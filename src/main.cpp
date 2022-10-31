@@ -14,6 +14,6 @@ int main(int argc, char *argv[]) {
     std::istringstream(argv[2]) >> isProxyImage;
     std::istringstream(argv[3]) >> isAttackerMode;
 
-    Server server = Server(port);
+    Server server = Server(port, isProxyImage, isAttackerMode);
     server.startListening();
 }
