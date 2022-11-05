@@ -1,6 +1,6 @@
 #include "Url.h"
 
-Url::Url(int port, std::string host, std::string reqUrl) : port(port), host(host) reqUrl(reqUrl) {
+Url::Url(int port, std::string host, std::string reqUrl) : port(port), host(host), reqUrl(reqUrl) {
 }
 
 int Url::getPort() {
