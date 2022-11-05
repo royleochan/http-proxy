@@ -17,6 +17,7 @@ private:
     static std::unordered_map<std::string, std::string> parseHeaders(const std::vector<std::string>& headers);
 public:
     static HttpRequest parseStringToHttpRequest(const std::string& requestString);
+    static std::string createMinimalGetReq(std::string endpoint, std::string host, HttpVersion version);
     HttpVersion getVersion();
     Url getUrl();
 };

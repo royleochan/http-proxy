@@ -77,6 +77,10 @@ HttpRequest HttpRequest::parseStringToHttpRequest(const std::string& requestStri
     }
 }
 
+std::string HttpRequest::createMinimalGetReq(std::string endpoint, std::string host, HttpVersion version) {
+    return "GET " + endpoint + " " + HttpUtil::httpVersionToString(version) + "\r\n" + "Host: " + host + "\r\n\r\n";
+}
+
 HttpVersion HttpRequest::getVersion() {
     return version;
 }
