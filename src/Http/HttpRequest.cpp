@@ -71,7 +71,7 @@ HttpRequest HttpRequest::parseStringToHttpRequest(const std::string& requestStri
             port = 80;
         }
 
-        return {HttpUtil::getHttpMethod(httpVerb), Url(port, host), version, reqBody};
+        return {HttpUtil::getHttpMethod(httpVerb), Url(port, host, endPoint), version, reqBody};
     } catch (...) {
         throw std::invalid_argument("Could not create HTTP request");
     }
