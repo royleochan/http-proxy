@@ -67,3 +67,28 @@ std::string HttpUtil::httpStatusCodeToString(HttpStatusCode code) {
             return "";
     }
 }
+
+std::vector<std::string> HttpUtil::splitStringByDelim(const std::string& input, char delim) {
+    std::string temp;
+    std::vector<std::string> tokens;
+    std::stringstream ss(input);
+
+    while(getline(ss, temp, delim)) {
+        tokens.push_back(temp);
+    }
+
+    return tokens;
+}
+
+std::unordered_map<std::string, std::string> HttpUtil::parseHeaders(const std::vector<std::string>& headers) {
+    std::unordered_map<std::string, std::string> result;
+
+    for (const auto& header : headers) {
+        auto index = header.find(':', 0);
+        if (index != std::string::npos) {
+            result[header.substr(0, index)] = header.substr(index + 2);
+        }
+    }
+
+    return result;
+}

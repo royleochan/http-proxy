@@ -2,6 +2,9 @@
 
 #include <map>
 #include <string>
+#include <vector>
+#include <sstream>
+#include <unordered_map>
 
 // Http methods
 enum class HttpMethod {
@@ -44,4 +47,6 @@ public:
     static HttpVersion getHttpVersion(std::string version);
     static std::string httpVersionToString(HttpVersion version);
     static std::string httpStatusCodeToString(HttpStatusCode code);
+    static std::vector<std::string> splitStringByDelim(const std::string& input, char delim);
+    static std::unordered_map<std::string, std::string> parseHeaders(const std::vector<std::string>& headers);
 };

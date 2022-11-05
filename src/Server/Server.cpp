@@ -26,14 +26,7 @@ std::string Server::handleRequest(HttpRequest request) {
     std::string reqString = HttpRequest::createMinimalGetReq(url.getReqUrl(), url.getHost() + ":" + std::to_string(url.getPort()), request.getVersion());
     write(clientSock.getSocketFd(), reqString.data(),reqString.length());
     char buffer[BUFF_SIZE] = {0};
-    recv(clientSock.getSocketFd(), buffer, BUFF_SIZE, 0);
-//    size_t total = 0;
-//    while (true) {
-//        ssize_t sz = recv(clientSock.getSocketFd(), buffer, BUFF_SIZE, 0);
-//        if (sz == -1) perror("receive failed");
-//        if (sz == 0) break;
-//        total += sz;
-//    }
+    size_t total = recv(clientSock.getSocketFd(), buffer, BUFF_SIZE, 0);
 
     return {buffer};
 }
