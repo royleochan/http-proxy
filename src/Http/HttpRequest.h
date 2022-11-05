@@ -18,5 +18,4 @@ public:
     static std::string createMinimalGetReq(std::string endpoint, std::string host, HttpVersion version);
     HttpVersion getVersion();
     Url getUrl();
-    int getContentLength();
 };

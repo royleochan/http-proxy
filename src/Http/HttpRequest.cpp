@@ -54,7 +54,8 @@ HttpRequest HttpRequest::parseStringToHttpRequest(const std::string& requestStri
 }
 
 std::string HttpRequest::createMinimalGetReq(std::string endpoint, std::string host, HttpVersion version) {
-    return "GET " + endpoint + " " + HttpUtil::httpVersionToString(version) + "\r\n" + "Host: " + host + "\r\n\r\n";
+    return "GET " + endpoint + " " + HttpUtil::httpVersionToString(version) + "\r\n" + "Host: " + host + "\r\n"
+        + "Accept: */*" + "\r\n\r\n";
 }
 
 HttpVersion HttpRequest::getVersion() {
@@ -63,13 +64,4 @@ HttpVersion HttpRequest::getVersion() {
 
 Url HttpRequest::getUrl() {
     return url;
-}
-
-int HttpRequest::getContentLength() {
-    std::string key = "Content-Length";
-    if (headers.find(key) == headers.end()) {
-        return 0;
-    } else {
-        return std::stoi(headers.at(key));
-    }
 }
