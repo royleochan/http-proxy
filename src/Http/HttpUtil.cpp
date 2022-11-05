@@ -33,3 +33,37 @@ HttpVersion HttpUtil::getHttpVersion(std::string version) {
         throw std::invalid_argument("Unsupported HTTP version");
     }
 }
+
+std::string HttpUtil::httpVersionToString(HttpVersion version) {
+    switch (version) {
+        case HttpVersion::HTTP_1_0:
+            return "HTTP/1.0";
+        case HttpVersion::HTTP_1_1:
+            return "HTTP/1.1";
+        default:
+            return "";
+    };
+}
+
+std::string HttpUtil::httpStatusCodeToString(HttpStatusCode code) {
+    switch (code) {
+        case HttpStatusCode::Ok:
+            return "OK";
+        case HttpStatusCode::Accepted:
+            return "Accepted";
+        case HttpStatusCode::BadRequest:
+            return "Bad Request";
+        case HttpStatusCode::Forbidden:
+            return "Forbidden";
+        case HttpStatusCode::NotFound:
+            return "Not Found";
+        case HttpStatusCode::MethodNotAllowed:
+            return "Method Not Allowed";
+        case HttpStatusCode::InternalServerError:
+            return "Internal Server Error";
+        case HttpStatusCode::BadGateway:
+            return "Bad Gateway";
+        default:
+            return "";
+    }
+}

@@ -22,12 +22,12 @@ Socket::~Socket() {
 Socket Socket::createSocket(int communicationDomain, int serviceType, int protocol, int port, u_long interface,
                             std::string socketType) {
     Socket socket = {communicationDomain, serviceType, protocol, port, interface};
-    if (socketType == "CLIENT") {
+    if (socketType == CLIENT_SOCKET) {
         // Connect socket
         if ((connect(socket.getSocketFd(), (struct sockaddr*) socket.getAddress(), sizeof(address))) < 0) {
             perror("Error binding socket...");
         }
-    } else if (socketType == "SERVER") {
+    } else if (socketType == SERVER_SOCKET) {
         // Bind socket
         if ((bind(socket.getSocketFd(), (struct sockaddr*) socket.getAddress(), sizeof(address))) < 0) {
             perror("Error binding socket...");

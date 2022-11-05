@@ -4,6 +4,7 @@
 
 #include "../Socket/Socket.h"
 #include "../Http/HttpRequest.h"
+#include "../Http/HttpUtil.h"
 
 class Server {
 private:
@@ -11,7 +12,8 @@ private:
     int port;
     bool isImageSubMode;
     bool isAttackerMode;
-    char* handleRequest(HttpRequest request) const;
+    static std::string createPlainTextResponse(HttpVersion version, HttpStatusCode code, int length, std::string content) ;
+    std::string handleRequest(HttpRequest request) const;
 public:
     explicit Server(int port, bool isImageSubMode, bool isAttackerMode);
     void startListening();
