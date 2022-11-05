@@ -4,8 +4,9 @@
 #include <netdb.h>
 
 #include "../Socket/Socket.h"
-#include "../Http/HttpRequest.h"
 #include "../Http/HttpUtil.h"
+#include "../Http/HttpResponse.h"
+#include "../Http/HttpRequest.h"
 
 class Server {
 private:
