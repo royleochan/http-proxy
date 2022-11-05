@@ -4,12 +4,10 @@
 
 class Url {
 private:
-    std::string reqUrl;
-    std::string userAgent;
-    std::string connectionStatus;
+    int port;
+    std::string host;
 public:
-    Url(std::string reqUrl, std::string userAgent, std::string connectionStatus);
-    std::string getReqUrl();
-    std::string getUserAgent();
-    std::string getConnectionStatus();
+    Url(int port, std::string host);
+    int getPort();
+    std::string getHost();
 };

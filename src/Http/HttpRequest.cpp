@@ -3,12 +3,12 @@
 HttpRequest::HttpRequest(HttpMethod verb, Url url, HttpVersion version, std::string content) : verb(verb), url(url), version(version), content(content) {
 }
 
-std::vector<std::string> splitStringBySpaces(const std::string& input) {
+std::vector<std::string> splitStringByDelim(const std::string& input, char delim) {
     std::string temp;
     std::vector<std::string> tokens;
     std::stringstream ss(input);
 
-    while(getline(ss, temp, ' ')) {
+    while(getline(ss, temp, delim)) {
         tokens.push_back(temp);
     }
 
@@ -47,7 +47,7 @@ HttpRequest HttpRequest::parseStringToHttpRequest(const std::string& requestStri
 
         // parse req
         std::string req = lines.at(0);
-        std::vector<std::string> reqInfo = splitStringBySpaces(req);
+        std::vector<std::string> reqInfo = splitStringByDelim(req, ' ');
         std::string httpVerb = reqInfo.at(0);
         std::string endPoint = reqInfo.at(1);
         HttpVersion version = HttpUtil::getHttpVersion(reqInfo.at(2));
@@ -56,7 +56,22 @@ HttpRequest HttpRequest::parseStringToHttpRequest(const std::string& requestStri
         std::unordered_map<std::string, std::string> headers = parseHeaders(std::vector<std::string>(
                 lines.begin() + 1, lines.end()));
 
-        return {HttpUtil::getHttpMethod(httpVerb), Url(endPoint, headers["User-Agent"], headers["Connection"]), version, reqBody};
+        // parse end point
+        int port, pos;
+        std::string host;
+        std::vector<std::string> endPointInfo = splitStringByDelim(endPoint, ':');
+        std::string hostSection = endPointInfo.at(1);
+        std::vector<std::string> hostInfo = splitStringByDelim(hostSection, '/');
+        host = hostInfo.at(2);
+        if (endPointInfo.size() >= 2) {
+            std::string temp = endPointInfo.at(2);
+            pos = temp.find('/');
+            port = stoi(temp.substr(0, pos));
+        } else {
+            port = 80;
+        }
+
+        return {HttpUtil::getHttpMethod(httpVerb), Url(port, host), version, reqBody};
     } catch (...) {
         throw std::invalid_argument("Could not create HTTP request");
     }
@@ -64,4 +79,8 @@ HttpRequest HttpRequest::parseStringToHttpRequest(const std::string& requestStri
 
 HttpVersion HttpRequest::getVersion() {
     return version;
+}
+
+Url HttpRequest::getUrl() {
+    return url;
 }

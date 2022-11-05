@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unistd.h>
+#include <netdb.h>
 
 #include "../Socket/Socket.h"
 #include "../Http/HttpRequest.h"
@@ -13,7 +14,7 @@ private:
     bool isImageSubMode;
     bool isAttackerMode;
     static std::string createPlainTextResponse(HttpVersion version, HttpStatusCode code, int length, std::string content) ;
-    std::string handleRequest(HttpRequest request) const;
+    std::string handleRequest(HttpRequest request, std::string reqString) const;
 public:
     explicit Server(int port, bool isImageSubMode, bool isAttackerMode);
     void startListening();

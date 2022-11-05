@@ -18,4 +18,5 @@ private:
 public:
     static HttpRequest parseStringToHttpRequest(const std::string& requestString);
     HttpVersion getVersion();
+    Url getUrl();
 };
