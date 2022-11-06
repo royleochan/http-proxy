@@ -25,22 +25,24 @@ std::string Server::handleRequest(HttpRequest request) {
     Socket clientSock = Socket::createSocket(AF_INET, SOCK_STREAM, 0, url.getPort(), INADDR_ANY, h, CLIENT_SOCKET);
     std::string reqString = HttpRequest::createMinimalGetReq(url.getReqUrl(), url.getHost() + ":" + std::to_string(url.getPort()), request.getVersion());
     write(clientSock.getSocketFd(), reqString.data(),reqString.length());
+
+    size_t currContentLength = 0;
     char *ptr;
     char buffer[BUFF_SIZE] = {0};
     ptr = buffer;
-//    recv(clientSock.getSocketFd(), buffer, BUFF_SIZE, 0);
-//    HttpResponse response = HttpResponse::parseStringToHttpResponse(buffer);
-//    int responseLength = response.getContentLength();
+    currContentLength += recv(clientSock.getSocketFd(), buffer, BUFF_SIZE, 0);
+    ptr += currContentLength;
+    HttpResponse response = HttpResponse::parseStringToHttpResponse(buffer);
+    currContentLength -= response.getHeaderSize();
+    int responseContentLength = response.getContentLength();
 
-    size_t total = 0;
-    size_t temp;
-    do {
-        temp = recv(clientSock.getSocketFd(), ptr, BUFF_SIZE, 0);
+    while (currContentLength != responseContentLength) {
+        size_t temp = recv(clientSock.getSocketFd(), ptr, BUFF_SIZE, 0);
         if (temp < 0) perror("Failed to receive from socket");
-        else { total += temp; ptr += temp;}
-    } while (temp > 0);
+        else { currContentLength += temp; ptr += temp;}
+    }
 
-    return std::string(buffer, total); // https://stackoverflow.com/questions/164168/how-do-you-construct-a-stdstring-with-an-embedded-null
+    return std::string(buffer, currContentLength + response.getHeaderSize()); // https://stackoverflow.com/questions/164168/how-do-you-construct-a-stdstring-with-an-embedded-null
 }
 
 void Server::startListening() {

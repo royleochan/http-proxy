@@ -1,6 +1,6 @@
 #include "HttpResponse.h"
 
-HttpResponse::HttpResponse(std::unordered_map<std::string, std::string> headers) : headers(headers) {
+HttpResponse::HttpResponse(std::unordered_map<std::string, std::string> headers, int headerSize) : headers(headers), headerSize(headerSize) {
 
 }
 
@@ -25,10 +25,11 @@ HttpResponse HttpResponse::parseStringToHttpResponse(const std::string &response
         std::unordered_map<std::string, std::string> headers = HttpUtil::parseHeaders(std::vector<std::string>(
                 lines.begin() + 1, lines.end()));
 
-        return {headers};
+        return HttpResponse(headers, resAndHeaders.size() + 4);
     } catch (...) {
         throw std::invalid_argument("Could not create HTTP response");
-    }}
+    }
+}
 
 int HttpResponse::getContentLength() {
     std::string key = "Content-Length";
@@ -37,4 +38,8 @@ int HttpResponse::getContentLength() {
     } else {
         return std::stoi(headers.at(key));
     }
+}
+
+size_t HttpResponse::getHeaderSize() {
+    return headerSize;
 }
