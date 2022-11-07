@@ -1,6 +1,6 @@
 #include "Server.h"
 
-#define BUFF_SIZE 60000
+#define BUFF_SIZE 500000
 
 const std::string ATTACKER_MODE = "You are being attacked";
 const std::string BAD_REQUEST = "Could not parse http request";
