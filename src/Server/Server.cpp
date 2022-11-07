@@ -9,6 +9,10 @@ Server::Server(int port, bool isImageSubMode, bool isAttackerMode) : connSocket(
     port(port), isImageSubMode(isImageSubMode), isAttackerMode(isAttackerMode) {
 }
 
+void Server::logRequest(HttpRequest request, size_t responseSize) {
+    printf("%s, %zu\n", request.getUrl().getReqUrl().c_str(), responseSize);
+}
+
 std::string Server::createPlainTextResponse(HttpVersion version, HttpStatusCode code, int length, std::string content) {
     std::string v = HttpUtil::httpVersionToString(version);
     std::string statusCode = HttpUtil::httpStatusCodeToString(code);
@@ -43,6 +47,7 @@ std::string Server::handleRequest(HttpRequest request) {
 
     std::string result = std::string(newBuffer, currContentLength + response.getHeaderSize()); // https://stackoverflow.com/questions/164168/how-do-you-construct-a-stdstring-with-an-embedded-null
     delete[] newBuffer;
+    logRequest(request, currContentLength + response.getHeaderSize());
     return result;
 }
 
@@ -60,6 +65,8 @@ void Server::startListening() {
             perror("Error accepting connection...");
             exit(EXIT_FAILURE);
         }
+
+        printf("New connection on socket %d\n", newSocket);
 
         char buffer[BUFF_SIZE] = {0};
         read(newSocket, buffer, BUFF_SIZE);

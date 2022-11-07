@@ -16,6 +16,7 @@ private:
     bool isAttackerMode;
     static std::string createPlainTextResponse(HttpVersion version, HttpStatusCode code, int length, std::string content) ;
     std::string handleRequest(HttpRequest request);
+    void logRequest(HttpRequest request, size_t responseSize);
 public:
     explicit Server(int port, bool isImageSubMode, bool isAttackerMode);
     void startListening();
