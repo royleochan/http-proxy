@@ -1,6 +1,6 @@
 #include "Server.h"
 
-#define BUFF_SIZE 500000
+#define BUFF_SIZE 8192
 
 const std::string ATTACKER_MODE = "You are being attacked";
 const std::string BAD_REQUEST = "Could not parse http request";
@@ -26,23 +26,24 @@ std::string Server::handleRequest(HttpRequest request) {
     std::string reqString = HttpRequest::createMinimalGetReq(url.getReqUrl(), url.getHost() + ":" + std::to_string(url.getPort()), request.getVersion());
     write(clientSock.getSocketFd(), reqString.data(),reqString.length());
 
-    size_t currContentLength = 0;
-    char *ptr;
     char buffer[BUFF_SIZE] = {0};
-    ptr = buffer;
-    currContentLength += recv(clientSock.getSocketFd(), buffer, BUFF_SIZE, 0);
-    ptr += currContentLength;
+    size_t r = recv(clientSock.getSocketFd(), buffer, BUFF_SIZE, 0);
     HttpResponse response = HttpResponse::parseStringToHttpResponse(buffer);
-    currContentLength -= response.getHeaderSize();
+    size_t currContentLength = r - response.getHeaderSize();
     int responseContentLength = response.getContentLength();
+    char* newBuffer = new char[BUFF_SIZE + responseContentLength];
+    std::memcpy(newBuffer, buffer, r);
+    char *ptr = newBuffer + r;
 
     while (currContentLength != responseContentLength) {
-        size_t temp = recv(clientSock.getSocketFd(), ptr, BUFF_SIZE, 0);
+        size_t temp = recv(clientSock.getSocketFd(), ptr, BUFF_SIZE + responseContentLength, 0);
         if (temp < 0) perror("Failed to receive from socket");
         else { currContentLength += temp; ptr += temp;}
     }
 
-    return std::string(buffer, currContentLength + response.getHeaderSize()); // https://stackoverflow.com/questions/164168/how-do-you-construct-a-stdstring-with-an-embedded-null
+    std::string result = std::string(newBuffer, currContentLength + response.getHeaderSize()); // https://stackoverflow.com/questions/164168/how-do-you-construct-a-stdstring-with-an-embedded-null
+    delete[] newBuffer;
+    return result;
 }
 
 void Server::startListening() {
