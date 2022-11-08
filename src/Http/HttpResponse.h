@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HttpUtil.h"
+#include <algorithm>
 
 class HttpResponse {
 private:
