@@ -78,7 +78,7 @@ std::string Server::handleParsedRequest(HttpRequest request)
 
     std::string result = std::string(newBuffer, currContentLength + response.getHeaderSize()); // https://stackoverflow.com/questions/164168/how-do-you-construct-a-stdstring-with-an-embedded-null
     delete[] newBuffer;
-    logRequest(request, currContentLength + response.getHeaderSize());
+    logRequest(request, currContentLength);
     return result;
 }
 
