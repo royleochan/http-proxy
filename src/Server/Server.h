@@ -2,6 +2,8 @@
 
 #include <unistd.h>
 #include <netdb.h>
+#include <fcntl.h>
+#include <thread>
 
 #include "../Socket/Socket.h"
 #include "../Http/HttpUtil.h"
@@ -15,8 +17,11 @@ private:
     bool isImageSubMode;
     bool isAttackerMode;
     static std::string createPlainTextResponse(HttpVersion version, HttpStatusCode code, int length, std::string content) ;
-    std::string handleRequest(HttpRequest request);
     void logRequest(HttpRequest request, size_t responseSize);
+    void handleRequest(int socket);
+    std::string handleParsedRequest(HttpRequest request);
+    // TODO: implement image substitution
+
 public:
     explicit Server(int port, bool isImageSubMode, bool isAttackerMode);
     void startListening();
