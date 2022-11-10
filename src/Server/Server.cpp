@@ -59,8 +59,10 @@ void Server::startListening() {
     }
 
     while (true) {
-        int newSocket;
-        if ((newSocket = accept(connSocket.getSocketFd(), (struct sockaddr *)connSocket.getAddress(), (socklen_t*)connSocket.getAddress())) < 0)
+        int newSocket, clen;
+        struct sockaddr_in caddr;
+        clen = sizeof(caddr);
+        if ((newSocket = accept(connSocket.getSocketFd(), (struct sockaddr *)&caddr, (socklen_t *)&clen)) < 0)
         {
             perror("Error accepting connection...");
             exit(EXIT_FAILURE);
