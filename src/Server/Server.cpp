@@ -99,7 +99,9 @@ std::string Server::handleParsedRequest(HttpRequest request)
     std::string reqString = HttpRequest::createMinimalGetReq(url.getReqUrl(), url.getHost() + ":" + std::to_string(url.getPort()), request.getVersion());
     write(clientSock.getSocketFd(), reqString.data(), reqString.length());
 
-    std::string result = receive(clientSock.getSocketFd(), false);
+    bool isSubbed = url.getReqUrl().find("favicon.ico") != std::string::npos; // don't sub favicon
+
+    std::string result = receive(clientSock.getSocketFd(), isSubbed);
 
     return result;
 }
