@@ -12,4 +12,5 @@ public:
     static HttpResponse parseStringToHttpResponse(const std::string& responseString);
     int getContentLength();
     size_t getHeaderSize();
+    bool isContentTypeImage();
 };

@@ -10,17 +10,19 @@
 #include "../Http/HttpResponse.h"
 #include "../Http/HttpRequest.h"
 
-class Server {
+class Server
+{
 private:
     Socket connSocket;
     int port;
     bool isImageSubMode;
     bool isAttackerMode;
-    static std::string createPlainTextResponse(HttpVersion version, HttpStatusCode code, int length, std::string content) ;
+    static std::string createPlainTextResponse(HttpVersion version, HttpStatusCode code, int length, std::string content);
     void logRequest(HttpRequest request, size_t responseSize);
     void handleRequest(int socket);
     std::string handleParsedRequest(HttpRequest request);
-    // TODO: implement image substitution
+    std::string getImageSub();
+    std::string receive(int socket, bool isSubbed);
 
 public:
     explicit Server(int port, bool isImageSubMode, bool isAttackerMode);
