@@ -20,5 +20,5 @@ Concurrent requests for a single connection is implemented with multithreading.
 mkdir build && cd build
 cmake ..
 make
-./http_proxy <port> <image-flag> <attack-flag>
+./proxy <port> <image-flag> <attack-flag>
 ```
