@@ -19,10 +19,10 @@ private:
     bool isAttackerMode;
     static std::string createPlainTextResponse(HttpVersion version, HttpStatusCode code, int length, std::string content);
     void logRequest(HttpRequest request, size_t responseSize);
-    void handleRequest(int socket);
-    std::string handleParsedRequest(HttpRequest request);
     std::string getImageSub();
     std::string receive(int socket, bool isSubbed);
+    std::string handleParsedRequest(HttpRequest request);
+    void handleRequest(int socket);
 
 public:
     explicit Server(int port, bool isImageSubMode, bool isAttackerMode);

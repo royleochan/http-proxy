@@ -7,7 +7,8 @@
 #include <unordered_map>
 
 // Http methods
-enum class HttpMethod {
+enum class HttpMethod
+{
     POST,
     GET,
     PUT,
@@ -20,13 +21,15 @@ enum class HttpMethod {
 };
 
 // Only support HTTP/1.0 and HTTP/1.1
-enum class HttpVersion {
+enum class HttpVersion
+{
     HTTP_1_0 = 10,
     HTTP_1_1 = 11
 };
 
 // Http status codes
-enum class HttpStatusCode {
+enum class HttpStatusCode
+{
     Ok = 200,
     Created = 201,
     Accepted = 202,
@@ -41,12 +44,13 @@ enum class HttpStatusCode {
     BadGateway = 502,
 };
 
-class HttpUtil {
+class HttpUtil
+{
 public:
     static HttpMethod getHttpMethod(std::string method);
     static HttpVersion getHttpVersion(std::string version);
     static std::string httpVersionToString(HttpVersion version);
     static std::string httpStatusCodeToString(HttpStatusCode code);
-    static std::vector<std::string> splitStringByDelim(const std::string& input, char delim);
-    static std::unordered_map<std::string, std::string> parseHeaders(const std::vector<std::string>& headers);
+    static std::vector<std::string> splitStringByDelim(const std::string &input, char delim);
+    static std::unordered_map<std::string, std::string> parseHeaders(const std::vector<std::string> &headers);
 };

@@ -2,11 +2,13 @@
 
 #include <string>
 
-class Url {
+class Url
+{
 private:
     int port;
     std::string host;
     std::string reqUrl;
+
 public:
     Url(int port, std::string host, std::string reqUrl);
     int getPort();

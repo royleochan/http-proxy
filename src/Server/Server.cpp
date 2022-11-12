@@ -12,15 +12,38 @@ Server::Server(int port, bool isImageSubMode, bool isAttackerMode) : connSocket(
 {
 }
 
+std::string Server::createPlainTextResponse(HttpVersion version, HttpStatusCode code, int length, std::string content)
+{
+    std::string v = HttpUtil::httpVersionToString(version);
+    std::string statusCode = HttpUtil::httpStatusCodeToString(code);
+    return v + " " + std::to_string(static_cast<int>(code)) + statusCode + "\nContent-Type: text/plain\nContent-Length: " + std::to_string(length) + "\n\n" + content;
+}
+
 void Server::logRequest(HttpRequest request, size_t responseSize)
 {
     printf("%s, %zu\n", request.getUrl().getReqUrl().c_str(), responseSize);
+}
+
+std::string Server::getImageSub()
+{
+    HttpRequest req = HttpRequest::parseStringToHttpRequest(IMAGE_SUB_REQ);
+    hostent *h = gethostbyname(req.getUrl().getHost().c_str());
+    Socket clientSock = Socket::createSocket(AF_INET, SOCK_STREAM, 0, req.getUrl().getPort(), INADDR_ANY, h, CLIENT_SOCKET);
+    write(clientSock.getSocketFd(), IMAGE_SUB_REQ.data(), IMAGE_SUB_REQ.length());
+
+    return receive(clientSock.getSocketFd(), true);
 }
 
 std::string Server::receive(int socket, bool isSubbed)
 {
     char buffer[BUFF_SIZE] = {0};
     size_t r = recv(socket, buffer, BUFF_SIZE, 0);
+
+    if (r < 0)
+    {
+        perror("Failed to receive from socket");
+    }
+
     HttpResponse response = HttpResponse::parseStringToHttpResponse(buffer);
 
     size_t currContentLength = r - response.getHeaderSize();
@@ -46,11 +69,30 @@ std::string Server::receive(int socket, bool isSubbed)
 
     // logRequest(request, currContentLength);
 
-    bool test = response.isContentTypeImage();
     if (isImageSubMode && response.isContentTypeImage() && !isSubbed)
     {
         return getImageSub();
     }
+
+    return result;
+}
+
+std::string Server::handleParsedRequest(HttpRequest request)
+{
+    if (isAttackerMode)
+    {
+        return createPlainTextResponse(request.getVersion(), HttpStatusCode::Ok, ATTACKER_MODE.length(), ATTACKER_MODE);
+    }
+
+    hostent *h = gethostbyname(request.getUrl().getHost().c_str());
+    Url url = request.getUrl();
+    Socket clientSock = Socket::createSocket(AF_INET, SOCK_STREAM, 0, url.getPort(), INADDR_ANY, h, CLIENT_SOCKET);
+    std::string reqString = HttpRequest::createMinimalGetReq(url.getReqUrl(), url.getHost() + ":" + std::to_string(url.getPort()), request.getVersion());
+    write(clientSock.getSocketFd(), reqString.data(), reqString.length());
+
+    bool isSubbed = url.getReqUrl().find("favicon.ico") != std::string::npos; // don't sub favicon
+
+    std::string result = receive(clientSock.getSocketFd(), isSubbed);
 
     return result;
 }
@@ -79,43 +121,6 @@ void Server::handleRequest(int socket)
     write(socket, result.data(), result.size());
 }
 
-std::string Server::createPlainTextResponse(HttpVersion version, HttpStatusCode code, int length, std::string content)
-{
-    std::string v = HttpUtil::httpVersionToString(version);
-    std::string statusCode = HttpUtil::httpStatusCodeToString(code);
-    return v + " " + std::to_string(static_cast<int>(code)) + statusCode + "\nContent-Type: text/plain\nContent-Length: " + std::to_string(length) + "\n\n" + content;
-}
-
-std::string Server::handleParsedRequest(HttpRequest request)
-{
-    if (isAttackerMode)
-    {
-        return createPlainTextResponse(request.getVersion(), HttpStatusCode::Ok, ATTACKER_MODE.length(), ATTACKER_MODE);
-    }
-
-    hostent *h = gethostbyname(request.getUrl().getHost().c_str());
-    Url url = request.getUrl();
-    Socket clientSock = Socket::createSocket(AF_INET, SOCK_STREAM, 0, url.getPort(), INADDR_ANY, h, CLIENT_SOCKET);
-    std::string reqString = HttpRequest::createMinimalGetReq(url.getReqUrl(), url.getHost() + ":" + std::to_string(url.getPort()), request.getVersion());
-    write(clientSock.getSocketFd(), reqString.data(), reqString.length());
-
-    bool isSubbed = url.getReqUrl().find("favicon.ico") != std::string::npos; // don't sub favicon
-
-    std::string result = receive(clientSock.getSocketFd(), isSubbed);
-
-    return result;
-}
-
-std::string Server::getImageSub()
-{
-    HttpRequest req = HttpRequest::parseStringToHttpRequest(IMAGE_SUB_REQ);
-    hostent *h = gethostbyname(req.getUrl().getHost().c_str());
-    Socket clientSock = Socket::createSocket(AF_INET, SOCK_STREAM, 0, req.getUrl().getPort(), INADDR_ANY, h, CLIENT_SOCKET);
-    write(clientSock.getSocketFd(), IMAGE_SUB_REQ.data(), IMAGE_SUB_REQ.length());
-
-    return receive(clientSock.getSocketFd(), true);
-}
-
 void Server::startListening()
 {
     if (listen(connSocket.getSocketFd(), 5) < 0)
@@ -125,34 +130,34 @@ void Server::startListening()
     else
     {
         printf("Proxy listening on port %d\n", port);
-    }
 
-    while (true)
-    {
-        // TODO: use select for concurrent connections
-        // int opts = 1
-        // setsockopt(newSocket, SOL_SOCKET, SO_REUSEADDR, &opts, sizeof(opts));
-        // opts = (opts | O_NONBLOCK);
-        // fcntl(newSocket, F_SETFL, opts);
-        int newSocket, clen;
-        struct sockaddr_in caddr;
-        clen = sizeof(caddr);
-        if ((newSocket = accept(connSocket.getSocketFd(), (struct sockaddr *)&caddr, (socklen_t *)&clen)) < 0)
+        while (true)
         {
-            perror("Error accepting connection...");
-            exit(EXIT_FAILURE);
+            // TODO: use select for concurrent connections
+            // int opts = 1
+            // setsockopt(newSocket, SOL_SOCKET, SO_REUSEADDR, &opts, sizeof(opts));
+            // opts = (opts | O_NONBLOCK);
+            // fcntl(newSocket, F_SETFL, opts);
+            int newSocket, clen;
+            struct sockaddr_in caddr;
+            clen = sizeof(caddr);
+            if ((newSocket = accept(connSocket.getSocketFd(), (struct sockaddr *)&caddr, (socklen_t *)&clen)) < 0)
+            {
+                perror("Error accepting connection...");
+                exit(EXIT_FAILURE);
+            }
+
+            printf("New connection on socket %d\n", newSocket);
+
+            // handle concurrent requests with threading
+            for (int i = 0; i < MAX_REQ_THREADS; i++)
+            {
+                // TODO: use thread pool instead of hard coded number of threads
+                std::thread t = std::thread(&Server::handleRequest, this, newSocket);
+                t.detach();
+            }
+
+            // TODO: close(newSocket) => after a set timeout or client closes socket
         }
-
-        printf("New connection on socket %d\n", newSocket);
-
-        // handle concurrent requests with threading
-        for (int i = 0; i < MAX_REQ_THREADS; i++)
-        {
-            // TODO: use thread pool instead of hard coded number of threads
-            std::thread t = std::thread(&Server::handleRequest, this, newSocket);
-            t.detach();
-        }
-
-        // TODO: close(newSocket) => after a set timeout or client closes socket
     }
 }

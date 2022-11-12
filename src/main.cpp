@@ -2,8 +2,10 @@
 
 #include "Server/Server.h"
 
-int main(int argc, char *argv[]) {
-    if (argc != 4) {
+int main(int argc, char *argv[])
+{
+    if (argc != 4)
+    {
         perror("3 arguments must be supplied: port, imageSubFlag, attackerModeFlag");
         exit(EXIT_FAILURE);
     }
