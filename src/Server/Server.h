@@ -22,7 +22,7 @@ private:
     std::string getImageSub();
     std::string receive(int socket, bool isSubbed);
     std::string handleParsedRequest(HttpRequest request);
-    void handleRequest(int socket);
+    void handleClient(int socket);
 
 public:
     explicit Server(int port, bool isImageSubMode, bool isAttackerMode);

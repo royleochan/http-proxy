@@ -1,6 +1,5 @@
 #include "Server.h"
 
-#define MAX_REQ_THREADS 50
 #define BUFF_SIZE 8192
 
 const std::string IMAGE_SUB_REQ = "GET http://ocna0.d2.comp.nus.edu.sg:50000/change.jpg HTTP/1.1\r\nHost: ocna0.d2.comp.nus.edu.sg:50000\r\nAccept: */*\r\n\r\n";
@@ -97,28 +96,34 @@ std::string Server::handleParsedRequest(HttpRequest request)
     return result;
 }
 
-void Server::handleRequest(int socket)
+void Server::handleClient(int socket)
 {
-    char buffer[BUFF_SIZE] = {0};
-    int r = read(socket, buffer, BUFF_SIZE);
-    if (r <= 0)
-    {
-        return;
-    }
+    int r = 0;
+    do {
+        char buffer[BUFF_SIZE] = {0};
+        int r = read(socket, buffer, BUFF_SIZE);
+        if (r <= 0)
+        {
+            return;
+        }
 
-    std::string result;
+        std::string result;
 
-    try
-    {
-        HttpRequest req = HttpRequest::parseStringToHttpRequest(buffer);
-        result = handleParsedRequest(req);
-    }
-    catch (...)
-    {
-        result = createPlainTextResponse(HttpVersion::HTTP_1_1, HttpStatusCode::BadRequest, BAD_REQUEST.length(), BAD_REQUEST);
-    }
+        try
+        {
+            HttpRequest req = HttpRequest::parseStringToHttpRequest(buffer);
+            std::cout << std::hash<std::thread::id>{}(std::this_thread::get_id()) << std::endl;
+            std::cout << req.getUrl().getReqUrl() << std::endl;
+            result = handleParsedRequest(req);
+        }
+        catch (...)
+        {
+            result = createPlainTextResponse(HttpVersion::HTTP_1_1, HttpStatusCode::BadRequest, BAD_REQUEST.length(), BAD_REQUEST);
+        }
 
-    write(socket, result.data(), result.size());
+        write(socket, result.data(), result.size());
+    } while (r > 0);
+    close(socket);
 }
 
 void Server::startListening()
@@ -129,15 +134,10 @@ void Server::startListening()
     }
     else
     {
-        printf("Proxy listening on port %d\n", port);
+        printf("Proxy listening on port %d with socket %d\n", port, connSocket.getSocketFd());
 
         while (true)
         {
-            // TODO: use select for concurrent connections
-            // int opts = 1
-            // setsockopt(newSocket, SOL_SOCKET, SO_REUSEADDR, &opts, sizeof(opts));
-            // opts = (opts | O_NONBLOCK);
-            // fcntl(newSocket, F_SETFL, opts);
             int newSocket, clen;
             struct sockaddr_in caddr;
             clen = sizeof(caddr);
@@ -148,16 +148,8 @@ void Server::startListening()
             }
 
             printf("New connection on socket %d\n", newSocket);
-
-            // handle concurrent requests with threading
-            for (int i = 0; i < MAX_REQ_THREADS; i++)
-            {
-                // TODO: use thread pool instead of hard coded number of threads
-                std::thread t = std::thread(&Server::handleRequest, this, newSocket);
-                t.detach();
-            }
-
-            // TODO: close(newSocket) => after a set timeout or client closes socket
+            std::thread t = std::thread(&Server::handleClient, this, newSocket);
+            t.detach();
         }
     }
 }
