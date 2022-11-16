@@ -43,7 +43,7 @@ HttpRequest HttpRequest::parseStringToHttpRequest(const std::string &requestStri
         std::string hostSection = endPointInfo.at(1);
         std::vector<std::string> hostInfo = HttpUtil::splitStringByDelim(hostSection, '/');
         host = hostInfo.at(2);
-        if (endPointInfo.size() >= 2)
+        if (endPointInfo.size() > 2)
         {
             std::string temp = endPointInfo.at(2);
             pos = temp.find('/');
