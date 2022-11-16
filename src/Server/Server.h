@@ -21,7 +21,7 @@ private:
     void logRequest(HttpRequest request, size_t responseSize);
     std::string getImageSub();
     std::string receive(int socket, bool isSubbed);
-    std::string handleParsedRequest(HttpRequest request);
+    std::string handleParsedRequest(HttpRequest request, char reqString[], int length);
     void handleClient(int socket);
 
 public:

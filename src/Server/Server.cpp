@@ -66,8 +66,6 @@ std::string Server::receive(int socket, bool isSubbed)
     std::string result = std::string(newBuffer, currContentLength + response.getHeaderSize()); // https://stackoverflow.com/questions/164168/how-do-you-construct-a-stdstring-with-an-embedded-null
     delete[] newBuffer;
 
-    // logRequest(request, currContentLength);
-
     if (isImageSubMode && response.isContentTypeImage() && !isSubbed)
     {
         return getImageSub();
@@ -76,7 +74,7 @@ std::string Server::receive(int socket, bool isSubbed)
     return result;
 }
 
-std::string Server::handleParsedRequest(HttpRequest request)
+std::string Server::handleParsedRequest(HttpRequest request, char reqString[], int length)
 {
     if (isAttackerMode)
     {
@@ -86,8 +84,8 @@ std::string Server::handleParsedRequest(HttpRequest request)
     hostent *h = gethostbyname(request.getUrl().getHost().c_str());
     Url url = request.getUrl();
     Socket clientSock = Socket::createSocket(AF_INET, SOCK_STREAM, 0, url.getPort(), INADDR_ANY, h, CLIENT_SOCKET);
-    std::string reqString = HttpRequest::createMinimalGetReq(url.getReqUrl(), url.getHost() + ":" + std::to_string(url.getPort()), request.getVersion());
-    write(clientSock.getSocketFd(), reqString.data(), reqString.length());
+    std::string test = HttpRequest::createMinimalGetReq(url.getReqUrl(), url.getHost() + ":" + std::to_string(url.getPort()), request.getVersion());
+    write(clientSock.getSocketFd(), test.data(), test.length());
 
     bool isSubbed = url.getReqUrl().find("favicon.ico") != std::string::npos; // don't sub favicon
 
@@ -99,29 +97,38 @@ std::string Server::handleParsedRequest(HttpRequest request)
 void Server::handleClient(int socket)
 {
     int r = 0;
-    do {
+    do
+    {
+        // read until at least entire http request header is received
+        r = 0;
+        char *endHeader = NULL;
         char buffer[BUFF_SIZE] = {0};
-        int r = read(socket, buffer, BUFF_SIZE);
-        if (r <= 0)
+        do
         {
-            return;
-        }
+            r += read(socket, buffer, BUFF_SIZE);
+            if (r <= 0)
+                break;
+            endHeader = strstr(buffer, "\r\n\r\n");
+        } while (!endHeader);
 
-        std::string result;
-
-        try
+        // try to parse http request, if able to parse then handle it, else return 400 error
+        if (r > 0)
         {
-            HttpRequest req = HttpRequest::parseStringToHttpRequest(buffer);
-            std::cout << std::hash<std::thread::id>{}(std::this_thread::get_id()) << std::endl;
-            std::cout << req.getUrl().getReqUrl() << std::endl;
-            result = handleParsedRequest(req);
-        }
-        catch (...)
-        {
-            result = createPlainTextResponse(HttpVersion::HTTP_1_1, HttpStatusCode::BadRequest, BAD_REQUEST.length(), BAD_REQUEST);
-        }
+            std::string result;
+            try
+            {
+                HttpRequest req = HttpRequest::parseStringToHttpRequest(buffer);
+                std::cout << std::hash<std::thread::id>{}(std::this_thread::get_id()) << std::endl;
+                std::cout << req.getUrl().getReqUrl() << std::endl;
+                result = handleParsedRequest(req, buffer, r);
+            }
+            catch (...)
+            {
+                result = createPlainTextResponse(HttpVersion::HTTP_1_1, HttpStatusCode::BadRequest, BAD_REQUEST.length(), BAD_REQUEST);
+            }
 
-        write(socket, result.data(), result.size());
+            write(socket, result.data(), result.size());
+        }
     } while (r > 0);
     close(socket);
 }
