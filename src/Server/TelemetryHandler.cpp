@@ -19,11 +19,12 @@ void TelemetryHandler::setTerminate()
   terminate = true;
 }
 
-void TelemetryHandler::run()
+void TelemetryHandler::run(std::unordered_map<std::string, TelemetryHandler *> &telemetryState)
 {
   sleep(3);
   if (!terminate)
   {
     printf("%s, %zu\n", url.c_str(), size);
+    telemetryState.erase(url);
   }
 }

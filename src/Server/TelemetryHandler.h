@@ -2,6 +2,7 @@
 
 #include <unistd.h>
 #include <string>
+#include <unordered_map>
 
 class TelemetryHandler
 {
@@ -15,5 +16,5 @@ public:
   ~TelemetryHandler();
   int getSize();
   void setTerminate();
-  void run();
+  void run(std::unordered_map<std::string, TelemetryHandler *> &telemetryState);
 };

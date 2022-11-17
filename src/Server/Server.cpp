@@ -131,7 +131,7 @@ void Server::handleClient(int socket)
                 {
                     TelemetryHandler *tHandler = new TelemetryHandler(telemetryKey, result.second);
                     telemetryState[telemetryKey] = tHandler;
-                    std::thread t = std::thread(&TelemetryHandler::run, tHandler);
+                    std::thread t = std::thread(&TelemetryHandler::run, tHandler, std::ref(telemetryState));
                     t.detach();
                 }
                 else
@@ -140,7 +140,7 @@ void Server::handleClient(int socket)
                     TelemetryHandler *newTHandler = new TelemetryHandler(telemetryKey, result.second + h->getSize());
                     h->setTerminate();
                     telemetryState[telemetryKey] = newTHandler;
-                    std::thread t = std::thread(&TelemetryHandler::run, newTHandler);
+                    std::thread t = std::thread(&TelemetryHandler::run, newTHandler, std::ref(telemetryState));
                     t.detach();
                 }
             }
