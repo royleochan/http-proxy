@@ -122,9 +122,8 @@ void Server::handleClient(int socket)
             try
             {
                 HttpRequest req = HttpRequest::parseStringToHttpRequest(buffer);
-                // std::cout << std::hash<std::thread::id>{}(std::this_thread::get_id()) << std::endl;
-                // std::cout << req.getUrl().getReqUrl() << std::endl;
                 std::pair<std::string, int> result = handleParsedRequest(req, buffer, r);
+
                 // handle telemetry
                 write(socket, result.first.data(), result.first.size());
                 std::string telemetryKey = req.getBaseUrl();
@@ -178,7 +177,6 @@ void Server::startListening()
                 exit(EXIT_FAILURE);
             }
 
-            printf("New connection on socket %d\n", newSocket);
             // spawn new thread for each connection
             std::thread t = std::thread(&Server::handleClient, this, newSocket);
             t.detach();
