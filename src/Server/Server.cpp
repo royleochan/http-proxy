@@ -73,7 +73,7 @@ std::pair<std::string, int> Server::receive(int socket, bool isSubbed)
         return getImageSub();
     }
 
-    return std::pair<std::string, int>(result, response.isStatusOk() ? currContentLength : 0);
+    return std::pair<std::string, int>(result, currContentLength);
 }
 
 std::pair<std::string, int> Server::handleParsedRequest(HttpRequest request, char reqString[], int length)
