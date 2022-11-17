@@ -60,6 +60,46 @@ HttpVersion HttpUtil::getHttpVersion(std::string version)
     }
 }
 
+HttpStatusCode HttpUtil::getHttpStatusCode(std::string version)
+{
+    if (version == "200")
+    {
+        return HttpStatusCode::Ok;
+    }
+    else if (version == "400")
+    {
+        return HttpStatusCode::BadRequest;
+    }
+    else if (version == "401")
+    {
+        return HttpStatusCode::Unauthorized;
+    }
+    else if (version == "403")
+    {
+        return HttpStatusCode::Forbidden;
+    }
+    else if (version == "404")
+    {
+        return HttpStatusCode::NotFound;
+    }
+    else if (version == "405")
+    {
+        return HttpStatusCode::MethodNotAllowed;
+    }
+    else if (version == "408")
+    {
+        return HttpStatusCode::RequestTimeout;
+    }
+    else if (version == "500")
+    {
+        return HttpStatusCode::InternalServerError;
+    }
+    else
+    {
+        throw std::invalid_argument("Unsupported status code");
+    }
+}
+
 std::string HttpUtil::httpVersionToString(HttpVersion version)
 {
     switch (version)

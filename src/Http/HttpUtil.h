@@ -49,6 +49,7 @@ class HttpUtil
 public:
     static HttpMethod getHttpMethod(std::string method);
     static HttpVersion getHttpVersion(std::string version);
+    static HttpStatusCode getHttpStatusCode(std::string version);
     static std::string httpVersionToString(HttpVersion version);
     static std::string httpStatusCodeToString(HttpStatusCode code);
     static std::vector<std::string> splitStringByDelim(const std::string &input, char delim);
