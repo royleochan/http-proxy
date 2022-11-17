@@ -21,4 +21,5 @@ public:
     static std::string createMinimalGetReq(std::string endpoint, std::string host, HttpVersion version);
     HttpVersion getVersion();
     Url getUrl();
+    std::string getBaseUrl();
 };

@@ -76,3 +76,15 @@ Url HttpRequest::getUrl()
 {
     return url;
 }
+
+std::string HttpRequest::getBaseUrl()
+{
+    if (headers.find("Referer") != headers.end())
+    {
+        return headers.at("Referer");
+    }
+    else
+    {
+        return url.getReqUrl();
+    }
+}

@@ -18,12 +18,7 @@ std::string Server::createPlainTextResponse(HttpVersion version, HttpStatusCode 
     return v + " " + std::to_string(static_cast<int>(code)) + statusCode + "\nContent-Type: text/plain\nContent-Length: " + std::to_string(length) + "\n\n" + content;
 }
 
-void Server::logRequest(HttpRequest request, size_t responseSize)
-{
-    printf("%s, %zu\n", request.getUrl().getReqUrl().c_str(), responseSize);
-}
-
-std::string Server::getImageSub()
+std::pair<std::string, int> Server::getImageSub()
 {
     HttpRequest req = HttpRequest::parseStringToHttpRequest(IMAGE_SUB_REQ);
     hostent *h = gethostbyname(req.getUrl().getHost().c_str());
@@ -33,7 +28,7 @@ std::string Server::getImageSub()
     return receive(clientSock.getSocketFd(), true);
 }
 
-std::string Server::receive(int socket, bool isSubbed)
+std::pair<std::string, int> Server::receive(int socket, bool isSubbed)
 {
     // read until at least entire response header is received
     size_t r = 0;
@@ -78,15 +73,15 @@ std::string Server::receive(int socket, bool isSubbed)
         return getImageSub();
     }
 
-    return result;
+    return std::pair<std::string, int>(result, currContentLength);
 }
 
-std::string Server::handleParsedRequest(HttpRequest request, char reqString[], int length)
+std::pair<std::string, int> Server::handleParsedRequest(HttpRequest request, char reqString[], int length)
 {
     // if attacker mode, return attack response
     if (isAttackerMode)
     {
-        return createPlainTextResponse(request.getVersion(), HttpStatusCode::Ok, ATTACKER_MODE.length(), ATTACKER_MODE);
+        return std::pair<std::string, int>(createPlainTextResponse(request.getVersion(), HttpStatusCode::Ok, ATTACKER_MODE.length(), ATTACKER_MODE), ATTACKER_MODE.length());
     }
 
     // send request to target server
@@ -100,9 +95,7 @@ std::string Server::handleParsedRequest(HttpRequest request, char reqString[], i
     bool isSubbed = url.getReqUrl().find("favicon.ico") != std::string::npos;
 
     // helper receive function
-    std::string result = receive(clientSock.getSocketFd(), isSubbed);
-
-    return result;
+    return receive(clientSock.getSocketFd(), isSubbed);
 }
 
 void Server::handleClient(int socket)
@@ -129,18 +122,37 @@ void Server::handleClient(int socket)
             try
             {
                 HttpRequest req = HttpRequest::parseStringToHttpRequest(buffer);
-                std::cout << std::hash<std::thread::id>{}(std::this_thread::get_id()) << std::endl;
-                std::cout << req.getUrl().getReqUrl() << std::endl;
-                result = handleParsedRequest(req, buffer, r);
+                // std::cout << std::hash<std::thread::id>{}(std::this_thread::get_id()) << std::endl;
+                // std::cout << req.getUrl().getReqUrl() << std::endl;
+                std::pair<std::string, int> result = handleParsedRequest(req, buffer, r);
+                // handle telemetry
+                write(socket, result.first.data(), result.first.size());
+                std::string telemetryKey = req.getBaseUrl();
+                if (telemetryState.find(telemetryKey) == telemetryState.end())
+                {
+                    TelemetryHandler *tHandler = new TelemetryHandler(telemetryKey, result.second);
+                    telemetryState[telemetryKey] = tHandler;
+                    std::thread t = std::thread(&TelemetryHandler::run, tHandler);
+                    t.detach();
+                }
+                else
+                {
+                    TelemetryHandler *h = telemetryState[telemetryKey];
+                    TelemetryHandler *newTHandler = new TelemetryHandler(telemetryKey, result.second + h->getSize());
+                    h->setTerminate();
+                    telemetryState[telemetryKey] = newTHandler;
+                    std::thread t = std::thread(&TelemetryHandler::run, newTHandler);
+                    t.detach();
+                }
             }
             catch (...)
             {
-                result = createPlainTextResponse(HttpVersion::HTTP_1_1, HttpStatusCode::BadRequest, BAD_REQUEST.length(), BAD_REQUEST);
+                std::string result = createPlainTextResponse(HttpVersion::HTTP_1_1, HttpStatusCode::BadRequest, BAD_REQUEST.length(), BAD_REQUEST);
+                write(socket, result.data(), result.size());
             }
-
-            write(socket, result.data(), result.size());
         }
     } while (r > 0);
+
     // close socket if no more bytes to read
     close(socket);
 }
