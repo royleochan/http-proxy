@@ -9,6 +9,13 @@ Concurrent requests for a single connection is implemented with multithreading.
 
 2. Proxy runs in the attacker mode if the third argument is set to 1. For any http request, proxy replies with a HTML page with the string “You are being attacked”.
 
+## Telemetry
+After fetching objects from the web server and connection to the server is closed, the proxy will print out the following on a single line:
+  - URL, size of object in bytes
+
+For example, the telemetry output should be a string format like this example: 
+  - http://www.comp.nus.edu.sg, 13433670
+
 ## Prerequisites
 - Target environment: linux
 - Browser: firefox
@@ -21,4 +28,12 @@ mkdir build && cd build
 cmake ..
 make
 ./proxy <port> <image-flag> <attack-flag>
+```
+
+## Output
+```
+Proxy listening on port 3001
+http://ocna0.d2.comp.nus.edu.sg:50000/tc1/, 517
+http://ocna0.d2.comp.nus.edu.sg:50000/tc2/, 37139
+http://ocna0.d2.comp.nus.edu.sg:50000/tc3/, 539638
 ```

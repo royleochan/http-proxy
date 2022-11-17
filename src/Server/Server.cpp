@@ -164,7 +164,7 @@ void Server::startListening()
     }
     else
     {
-        printf("Proxy listening on port %d\n", port);
+        printf("Proxy listening on port %d...\n", port);
 
         while (true)
         {
