@@ -1,7 +1,7 @@
 # Http Proxy
 
 Implements a simple HTTP web proxy that passes requests and data between a web client and a web server with basic socket programming interface.
-Concurrent requests for a single connection is implemented with multithreading.
+Concurrent connections are handled with multithreading.
 
 ## Extensions
 
