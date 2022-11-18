@@ -174,12 +174,13 @@ void Server::startListening()
             if ((newSocket = accept(connSocket.getSocketFd(), (struct sockaddr *)&caddr, (socklen_t *)&clen)) < 0)
             {
                 perror("Error accepting connection...");
-                exit(EXIT_FAILURE);
             }
-
-            // spawn new thread for each connection
-            std::thread t = std::thread(&Server::handleClient, this, newSocket);
-            t.detach();
+            else
+            {
+                // spawn new thread for each connection
+                std::thread t = std::thread(&Server::handleClient, this, newSocket);
+                t.detach();
+            }
         }
     }
 }

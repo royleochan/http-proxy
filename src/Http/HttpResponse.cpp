@@ -1,6 +1,6 @@
 #include "HttpResponse.h"
 
-HttpResponse::HttpResponse(std::unordered_map<std::string, std::string> headers, int headerSize, HttpStatusCode status) : headers(headers), headerSize(headerSize), status(status)
+HttpResponse::HttpResponse(std::unordered_map<std::string, std::string> headers, int headerSize) : headers(headers), headerSize(headerSize)
 {
 }
 
@@ -27,13 +27,13 @@ HttpResponse HttpResponse::parseStringToHttpResponse(const std::string &response
         // parse response status
         std::string res = lines.at(0);
         std::vector<std::string> resInfo = HttpUtil::splitStringByDelim(res, ' ');
-        HttpStatusCode statusCode = HttpUtil::getHttpStatusCode(resInfo.at(1));
+        // HttpStatusCode statusCode = HttpUtil::getHttpStatusCode(resInfo.at(1));
 
         // parse headers
         std::unordered_map<std::string, std::string> headers = HttpUtil::parseHeaders(std::vector<std::string>(
             lines.begin() + 1, lines.end()));
 
-        return HttpResponse(headers, resAndHeaders.size() + 4, statusCode);
+        return HttpResponse(headers, resAndHeaders.size() + 4);
     }
     catch (...)
     {
@@ -73,9 +73,4 @@ bool HttpResponse::isContentTypeImage()
         std::string type = contentType.substr(0, idx);
         return type == "image";
     }
-}
-
-bool HttpResponse::isStatusOk()
-{
-    return status == HttpStatusCode::Ok;
 }
